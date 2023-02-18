@@ -1,0 +1,40 @@
+version: "3.9"
+services:
+
+  mariadb:
+    image: mariadb:10
+    volumes:
+      - ./mariadb:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=dsrm
+      - MYSQL_PASSWORD=dsrm
+      - MYSQL_USER=dsrm
+      - MYSQL_DATABASE=mariatest
+    network_mode: host
+    ports:
+      - 3306:3306
+
+  dsrm-backend:
+    image: dsrm-backend
+    environment:
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=dsrm
+      - SPRING_DATASOURCE_DRIVER-CLASS-NAME=org.mariadb.jdbc.Driver
+      - SPRING_DATASOURCE_URL=jdbc:mariadb://localhost:3306/mariatest
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+      - SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT=org.hibernate.dialect.MariaDB103Dialect
+      - SPRING_SECURITY_USER_NAME=admin
+      - SPRING_SECURITY_USER_PASSWORD=dsrm
+    depends_on:
+      - mariadb
+    network_mode: host
+    ports:
+      - 8080:8080
+
+  dsrm-frontend:
+    build: ./dsrm-frontend
+    depends_on:
+      - dsrm-backend
+    network_mode: host
+    ports:
+      - 4200:80
